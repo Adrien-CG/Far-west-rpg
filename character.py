@@ -215,7 +215,7 @@ def ask_character_questions():
         "strength": 4,
         "sociability": 4,
         "intelligence": 4,
-        "money": 50,
+        "money": 500,
         "skills": [],
     }
 

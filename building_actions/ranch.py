@@ -1,9 +1,10 @@
+from action_system import action
+
+
 def get_ranch_actions(building):
+    # Actions disponibles quand le joueur entre dans un Ranch.
     return [
-        {
-            "label": "Acheter des provisions",
-            "handler": buy_ranch_goods,
-        },
+        action("Acheter des provisions", buy_ranch_goods),
     ]
 
 

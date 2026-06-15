@@ -1,15 +1,18 @@
+from action_system import action
+
+
 def get_saloon_actions(building):
+    # Pour ajouter une action au Saloon, ajoute une ligne action(...) dans cette liste.
+    # Une condition permet de masquer l'action tant que le batiment n'a pas la bonne option.
     return [
-        {
-            "label": "Boire une biere",
-            "handler": drink_beer,
-        },
-        {
-            "label": "Jouer au poker",
-            "handler": play_poker,
-            "condition": lambda selected_building, building_id: selected_building.features.get("table_poker", False),
-        },
+        action("Boire une biere", drink_beer),
+        action("Jouer au poker", play_poker, condition=has_poker_table),
     ]
+
+
+def has_poker_table(game, building):
+    # Exemple de condition : le poker apparait seulement si ce Saloon a une table.
+    return building.features.get("table_poker", False)
 
 
 def play_poker(game, building):

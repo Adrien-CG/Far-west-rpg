@@ -141,12 +141,16 @@ def building_from_dict(data, existing_ids):
         features=data.get("features", {}),
         hidden_stats=data.get("hidden_stats", {}),
         inventory=data.get("inventory", {}),
+        production=data.get("production", {}),
         employees=data.get("employees", []),
+        employee_roles=data.get("employee_roles", {}),
+        employee_tasks=data.get("employee_tasks", {}),
         upgrades=data.get("upgrades", []),
         current_balance=data.get("current_balance", 0),
         current_result=data.get("current_result", 0),
         balance_history=data.get("balance_history", []),
         result_history=data.get("result_history", []),
+        account_journal=data.get("account_journal", []),
     )
 
 

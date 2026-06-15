@@ -1,5 +1,7 @@
+from action_system import action, run_action_menu
 from buildings import BUILDING_CATALOG, Building
-from building_actions import get_building_action_choices, run_building_action
+from building_actions import get_building_actions
+from building_management import open_accounting_menu, open_employee_menu, open_improvement_menu
 from character import ask_choice, ask_text
 from ids import make_building_id
 from saves import save_game
@@ -90,51 +92,23 @@ def business_building_menu(game, building):
         print(f"Type : {building.building_type}")
         print(f"Proprietaire : {building.owner}")
 
-        choices = get_building_action_choices(building)
+        # Actions propres au type de batiment : Saloon, Ranch, General Store...
+        actions = get_building_actions(building)
 
         if building.owner == game.character.name:
-            choices.extend(
-                [
-                    {"label": "Gestion du batiment"},
-                ]
-            )
+            # La gestion n'apparait que si le joueur possede ce batiment.
+            actions.append(action("Gestion du batiment", owned_business_menu))
 
-        choices.append({"label": "Retour en ville"})
+        should_continue = run_action_menu(
+            "Action disponible :",
+            actions,
+            game,
+            building,
+            back_label="Retour en ville",
+        )
 
-        selected = ask_choice("Action disponible :", choices)
-        label = selected["label"]
-
-        if selected.get("action"):
-            run_building_action(game, building, selected["action"])
-        elif label == "Gestion du batiment":
-            owned_business_menu(game, building)
-        elif label == "Retour en ville":
+        if not should_continue:
             break
-
-
-def install_building_feature(game, building):
-    if building.building_type != "Saloon":
-        print("\nAucune installation speciale disponible pour ce batiment.")
-        return
-
-    choices = []
-
-    if not building.features.get("table_poker"):
-        choices.append({"label": "Installer une table de poker - 40 or", "feature": "table_poker", "cost": 40})
-
-    choices.append({"label": "Retour", "feature": None, "cost": 0})
-    selected = ask_choice("Quelle installation veux-tu ajouter ?", choices)
-
-    if selected["feature"] is None:
-        return
-
-    if game.character.money < selected["cost"]:
-        print("\nTu n'as pas assez d'or.")
-        return
-
-    game.character.money -= selected["cost"]
-    building.features[selected["feature"]] = True
-    print("\nLa table de poker est installee. Les clients peuvent maintenant jouer.")
 
 
 def public_building_menu(game, building):
@@ -142,34 +116,50 @@ def public_building_menu(game, building):
         print(f"\n=== {building.name} ===")
         print(f"ID : {building.building_id}")
 
-        if building.building_type == "Bureau du sherif":
-            choices = [
-                {"label": "Consulter les avis de recherche"},
-                {"label": "Signaler un probleme"},
-                {"label": "Retour en ville"},
-            ]
-        elif building.building_type == "Post Office":
-            choices = [
-                {"label": "Lire le courrier"},
-                {"label": "Envoyer une lettre"},
-                {"label": "Retour en ville"},
-            ]
-        else:
-            choices = [{"label": "Retour en ville"}]
+        should_continue = run_action_menu(
+            "Action disponible :",
+            public_building_actions(building),
+            game,
+            building,
+            back_label="Retour en ville",
+        )
 
-        selected = ask_choice("Action disponible :", choices)
-
-        if selected["label"] == "Consulter les avis de recherche":
-            print("\nAucun avis urgent pour le moment.")
-        elif selected["label"] == "Signaler un probleme":
-            game.city.security += 1
-            print("\nLe sherif note ton signalement. La securite de la ville augmente.")
-        elif selected["label"] == "Lire le courrier":
-            print("\nTu n'as pas encore de courrier.")
-        elif selected["label"] == "Envoyer une lettre":
-            print("\nLa lettre partira avec la prochaine diligence.")
-        elif selected["label"] == "Retour en ville":
+        if not should_continue:
             break
+
+
+def public_building_actions(building):
+    # Les batiments publics peuvent aussi utiliser le systeme d'actions commun.
+    if building.building_type == "Bureau du sherif":
+        return [
+            action("Consulter les avis de recherche", show_wanted_notices),
+            action("Signaler un probleme", report_problem),
+        ]
+
+    if building.building_type == "Post Office":
+        return [
+            action("Lire le courrier", read_mail),
+            action("Envoyer une lettre", send_letter),
+        ]
+
+    return []
+
+
+def show_wanted_notices(game, building):
+    print("\nAucun avis urgent pour le moment.")
+
+
+def report_problem(game, building):
+    game.city.security += 1
+    print("\nLe sherif note ton signalement. La securite de la ville augmente.")
+
+
+def read_mail(game, building):
+    print("\nTu n'as pas encore de courrier.")
+
+
+def send_letter(game, building):
+    print("\nLa lettre partira avec la prochaine diligence.")
 
 
 def owned_business_menu(game, building):
@@ -179,140 +169,23 @@ def owned_business_menu(game, building):
         print(f"Type : {building.building_type}")
         print(f"Niveau : {building.level}")
 
-        selected = ask_choice(
+        # Actions de gestion communes aux batiments possedes par le joueur.
+        actions = [
+            action("Comptabilite", open_accounting_menu),
+            action("Ameliorations", open_improvement_menu),
+            action("Employes", open_employee_menu),
+            action("Achats de marchandises", buy_supplies),
+        ]
+
+        should_continue = run_action_menu(
             "Fenetre de gestion :",
-            [
-                {"label": "Documents financiers"},
-                {"label": "Ameliorations"},
-                {"label": "Installations speciales"},
-                {"label": "Employes"},
-                {"label": "Achats de marchandises"},
-                {"label": "Retour en ville"},
-            ],
+            actions,
+            game,
+            building,
+            back_label="Retour en ville",
         )
 
-        if selected["label"] == "Documents financiers":
-            show_building_report(game, building)
-        elif selected["label"] == "Ameliorations":
-            upgrade_building(game, building)
-        elif selected["label"] == "Installations speciales":
-            install_building_feature(game, building)
-        elif selected["label"] == "Employes":
-            employee_menu(game, building)
-        elif selected["label"] == "Achats de marchandises":
-            buy_supplies(game, building)
-        elif selected["label"] == "Retour en ville":
-            break
-
-
-def show_building_report(game, building):
-    print("\n=== Bilan du batiment ===")
-    print(f"ID : {building.building_id}")
-    print(f"Solde actuel : {building.current_balance}")
-    print(f"Resultat actuel : {building.current_result}")
-    print(f"Stocks : {building.inventory or 'Aucun'}")
-    print(f"Installations : {visible_features(building)}")
-    print(f"Employes : {employee_names(game, building)}")
-    print(f"Ameliorations : {', '.join(building.upgrades) if building.upgrades else 'Aucune'}")
-    print(f"Historique soldes : {building.balance_history or 'Aucun'}")
-    print(f"Historique resultats : {building.result_history or 'Aucun'}")
-
-
-def employee_names(game, building):
-    names = []
-
-    for employee_id in building.employees:
-        npc = game.city.get_npc_by_id(employee_id)
-        names.append(npc.name if npc else employee_id)
-
-    return ", ".join(names) if names else "Aucun"
-
-
-def visible_features(building):
-    enabled_features = [
-        feature_name.replace("_", " ")
-        for feature_name, is_enabled in building.features.items()
-        if is_enabled
-    ]
-
-    return ", ".join(enabled_features) if enabled_features else "Aucune"
-
-
-def upgrade_building(game, building):
-    cost = 30 * (building.level + 1)
-
-    if building.owner != game.character.name:
-        print("\nTu ne peux pas ameliorer un batiment qui ne t'appartient pas.")
-        return
-
-    if game.character.money < cost:
-        print(f"\nIl te faut {cost} pieces d'or pour ameliorer ce batiment.")
-        return
-
-    game.character.money -= cost
-    building.level += 1
-    building.upgrades.append(f"Niveau {building.level}")
-
-    print(f"\n{building.name} passe au niveau {building.level}.")
-
-
-def hire_employee(game, building):
-    cost = 15
-
-    if building.owner != game.character.name:
-        print("\nTu ne peux pas recruter dans un batiment qui ne t'appartient pas.")
-        return
-
-    if game.character.money < cost:
-        print(f"\nIl te faut {cost} pieces d'or pour recruter.")
-        return
-
-    available_workers = [
-        npc
-        for npc in game.city.population
-        if npc.employer_building_id is None and npc.job in ["Journalier", "Journaliere", "Oisif", "Oisive"]
-    ]
-
-    if not available_workers:
-        print("\nPersonne n'est disponible a l'embauche pour le moment.")
-        return
-
-    choices = [
-        {"label": f"{npc.name} - {npc.job}", "npc": npc}
-        for npc in available_workers
-    ]
-    choices.append({"label": "Retour", "npc": None})
-
-    selected = ask_choice("Qui veux-tu recruter ?", choices)
-
-    if selected["npc"] is None:
-        return
-
-    recruited_npc = selected["npc"]
-    game.character.money -= cost
-    recruited_npc.job = f"Employe - {building.name}"
-    recruited_npc.employer_building_id = building.building_id
-    building.employees.append(recruited_npc.npc_id)
-
-    print(f"\n{recruited_npc.name} travaille maintenant a {building.name}.")
-
-
-def employee_menu(game, building):
-    while True:
-        print("\n=== Employes ===")
-        print(f"Employes actuels : {employee_names(game, building)}")
-
-        selected = ask_choice(
-            "Gestion des employes :",
-            [
-                {"label": "Recruter un employe"},
-                {"label": "Retour"},
-            ],
-        )
-
-        if selected["label"] == "Recruter un employe":
-            hire_employee(game, building)
-        elif selected["label"] == "Retour":
+        if not should_continue:
             break
 
 
@@ -468,43 +341,28 @@ def save_current_game(game):
 
 def city_menu(game):
     while True:
-        selected = ask_choice(
+        # Vue principale de la ville : plus tard l'interface pourra afficher ces actions
+        # dans une zone separee de la liste des batiments et du bouton Construire.
+        actions = [
+            action("Voir la ville", show_city),
+            action("Voir la population", show_population),
+            action("Entrer dans un batiment", enter_building),
+            action("Voir les batiments constructibles", show_building_catalog),
+            action("Construire un batiment", construct_building),
+            action("Travailler en ville", work_in_town),
+            action("Voir le personnage", show_character_sheet),
+            action("Passer au jour suivant", end_day),
+            action("Sauvegarder", save_current_game),
+        ]
+
+        should_continue = run_action_menu(
             f"{game.city.name} - Que veux-tu faire ?",
-            [
-                {"label": "Voir la ville"},
-                {"label": "Voir la population"},
-                {"label": "Entrer dans un batiment"},
-                {"label": "Voir les batiments constructibles"},
-                {"label": "Construire un batiment"},
-                {"label": "Travailler en ville"},
-                {"label": "Voir le personnage"},
-                {"label": "Passer au jour suivant"},
-                {"label": "Sauvegarder"},
-                {"label": "Quitter"},
-            ],
+            actions,
+            game,
+            back_label="Quitter",
         )
 
-        label = selected["label"]
-
-        if label == "Voir la ville":
-            show_city(game)
-        elif label == "Voir la population":
-            show_population(game)
-        elif label == "Entrer dans un batiment":
-            enter_building(game)
-        elif label == "Voir les batiments constructibles":
-            show_building_catalog(game)
-        elif label == "Construire un batiment":
-            construct_building(game)
-        elif label == "Travailler en ville":
-            work_in_town(game)
-        elif label == "Voir le personnage":
-            show_character_sheet(game)
-        elif label == "Passer au jour suivant":
-            end_day(game)
-        elif label == "Sauvegarder":
-            save_current_game(game)
-        elif label == "Quitter":
+        if not should_continue:
             save_current_game(game)
             print("\nA bientot.")
             break

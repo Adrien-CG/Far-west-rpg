@@ -43,15 +43,21 @@ py main.py
 ## Organisation
 
 - `main.py` lance le programme.
-  Il contient le menu principal : nouvelle partie, chargement, parametres et
-  quitter. Le menu de chargement permet aussi de supprimer une sauvegarde apres
-  confirmation.
+- `tk_ui.py` contient l'interface cliquable en Tkinter.
+  Elle contient le menu principal, la creation de personnage, le chargement,
+  la suppression de sauvegarde, la vue ville, les batiments et la gestion.
+  Une seule fenetre est ouverte : chaque menu remplace simplement l'ecran
+  precedent.
 - `character.py` contient la creation du personnage.
 - `game_state.py` contient l'etat global de la partie.
 - `buildings.py` contient le modele commun des batiments et le catalogue.
 - `population.py` genere les PNJ de la ville.
-- `city_actions.py` contient le menu principal de la ville et les actions.
+- `city_actions.py` contient encore l'ancien menu texte de la ville.
 - `building_actions/` contient les actions propres a chaque type de batiment.
+- `action_system.py` contient le moteur commun pour declarer, filtrer et
+  executer les actions.
+- `building_management/` contient les menus de gestion des batiments
+  economiques : comptabilite, ameliorations et employes.
 - `ids.py` genere les identifiants stables des batiments.
 - `saves.py` gere l'enregistrement dans le dossier `saves`.
 - `saves/*.json` contient les sauvegardes creees par le jeu.

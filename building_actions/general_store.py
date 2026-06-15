@@ -1,3 +1,7 @@
+from action_system import action
+
+
+# Prix utilises par les actions du General Store.
 BUY_PRICES = {
     "arme": 45,
     "cereales": 5,
@@ -17,13 +21,14 @@ STORE_STOCK_NAMES = {
 
 
 def get_general_store_actions(building):
+    # Ajouter une action de magasin = ajouter une ligne ici + une fonction si besoin.
     return [
-        {"label": "Acheter une arme", "handler": lambda game, selected_building: buy_item(game, selected_building, "arme")},
-        {"label": "Acheter des cereales", "handler": lambda game, selected_building: buy_item(game, selected_building, "cereales")},
-        {"label": "Acheter de la viande", "handler": lambda game, selected_building: buy_item(game, selected_building, "viande")},
-        {"label": "Vendre des cereales", "handler": lambda game, selected_building: sell_item(game, selected_building, "cereales")},
-        {"label": "Vendre de la viande", "handler": lambda game, selected_building: sell_item(game, selected_building, "viande")},
-        {"label": "Voir les stocks du magasin", "handler": show_store_stock},
+        action("Acheter une arme", lambda game, selected_building: buy_item(game, selected_building, "arme")),
+        action("Acheter des cereales", lambda game, selected_building: buy_item(game, selected_building, "cereales")),
+        action("Acheter de la viande", lambda game, selected_building: buy_item(game, selected_building, "viande")),
+        action("Vendre des cereales", lambda game, selected_building: sell_item(game, selected_building, "cereales")),
+        action("Vendre de la viande", lambda game, selected_building: sell_item(game, selected_building, "viande")),
+        action("Voir les stocks du magasin", show_store_stock),
     ]
 
 
