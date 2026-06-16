@@ -1,4 +1,4 @@
-from tk_ui import launch_app
+from ui.app import launch_app
 
 
 def main():

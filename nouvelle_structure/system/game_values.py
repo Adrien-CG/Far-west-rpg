@@ -1,0 +1,11 @@
+#valeur global de la partie
+
+DATE = 1865
+SEASON = "Printemps"
+POPULATION = []
+BUILDINGS_LIST = []
+ANIMALS_LIST = []
+MEDIAN_WAGE = 7
+TRAINSTATION = False
+PLAYER_CHARACTER = ""
+ACTIVE_BUILDING = ""
