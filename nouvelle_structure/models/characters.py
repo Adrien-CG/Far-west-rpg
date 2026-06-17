@@ -1,5 +1,7 @@
 #ensemble des méthodes et catalog pour la gestion des personnages
 
+### PARTIE CLASSE ET CATALOGUE ###
+
 #liste des compétences
 ALL_SKILLS = [
     ""
@@ -66,7 +68,7 @@ class Character:
     def __init__(self):
         Character._id_counter += 1
         #character information
-        self.id: str = f"ch{Character._id_counter:06d}" #ch000001
+        self.id_: str = f"ch{Character._id_counter:06d}" #ch000001
         self.name: str = ""
         self.lastname: str = ""
         self.sex: str = "Homme"
@@ -89,6 +91,7 @@ class Character:
         self.claims: list = [{}]
         #consumtion
         self.preference: list = [{}]
+        self.demand: list = [{}]
         self.cunsumption: list = [{}]
         self.behavior: str = ""
         #social
@@ -97,3 +100,24 @@ class Character:
         self.celebrity: int = 0
         self.politic: str = ""
         self.notable: bool = False
+
+### PARTIE METHODE COMMUNE CREATION ###
+
+### PARTIE CREATION PNJ ###
+
+def npc_creation():
+    return
+
+### PARTIE CREATION VOYAGEUR ###
+
+def traveller_creation():
+    return
+
+### PARTIE CREATION JOUEUR ###
+
+def player_creation():
+    return
+
+### PARTIE METHODE DE MODIFICATION ###
+
+### PARTIE METHODE D'APPEL ###
